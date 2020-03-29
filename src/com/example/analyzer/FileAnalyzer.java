@@ -1,12 +1,11 @@
 package com.example.analyzer;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class FileAnalyzer {
     public static void main(String[] args)
     {
+        boolean desiredFile = false;
         if(args.length!=3)
         {
             System.out.println("Usage: java FileAnalyzer file.sth \"%TOFIND\" \"To print if success\"");
@@ -15,32 +14,34 @@ public class FileAnalyzer {
         {
             try
             {
-                byte[] byteArray = Files.readAllBytes(Paths.get(args[0]));
-                if(checkIfPatternOccurs(byteArray,args[1].getBytes()))
+                byte buffer = -2;
+                FileInputStream file = new FileInputStream(args[0]);
+                byte[] pattern = args[1].getBytes();
+                int counter = 0;
+
+                while((buffer=(byte)file.read())!=-1)
                 {
-                    System.out.println(args[2]);
+                    if(buffer == pattern[counter])
+                    {
+                        counter++;
+                    }
+                    else counter = 0;
+                    if(counter == pattern.length)
+                    {
+                        desiredFile = true;
+                        break;
+                    }
                 }
-                else System.out.println("This is not a file you're looking for");
             }
             catch(IOException e)
             {
                 System.out.println("Cannot read data. File may not exist");
             }
-        }
-    }
-
-    public static boolean checkIfPatternOccurs(byte[] arr,byte[] pattern)
-    {
-        int counter = 0;
-        for(byte x:arr)
-        {
-            if(x == pattern[counter])
+            if(desiredFile)
             {
-                counter++;
+                System.out.println(args[2]);
             }
-            else counter = 0;
-            if(counter == pattern.length) break;
+            else System.out.println(Constants.MSG_UNKNOWN_TYPE);
         }
-        return counter == pattern.length;
     }
 }
